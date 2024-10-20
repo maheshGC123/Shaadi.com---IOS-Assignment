@@ -31,15 +31,19 @@ class CoreDataService: MatchDataSource {
         }
     }
     
-    func saveDecision(matchId: String, decision: Bool) {
+   func saveDecision(matchId: String, decision: MatchStatus, completion: @escaping (Result<Void, Error>) -> Void) {
+        // Create a new UserDecision object in the context
         let userDecision = UserDecision(context: context)
         userDecision.matchId = matchId
-        userDecision.decision = decision
+        userDecision.decision = decision.rawValue
         
+        // Attempt to save the context
         do {
             try context.save()
+            completion(.success(())) // Success: call completion with success
         } catch {
             print("Error saving decision: \(error)")
+            completion(.failure(error)) // Failure: pass the error to completion
         }
     }
     
@@ -53,7 +57,7 @@ class CoreDataService: MatchDataSource {
         }
     }
     
-    func saveUser(_ user: Match, decision: Bool?) {
+    func saveUser(_ user: Match) {
             // Check if the user already exists in Core Data
             let fetchRequest: NSFetchRequest<UserDecision> = UserDecision.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "matchId == %@", user.id as CVarArg)
@@ -65,7 +69,7 @@ class CoreDataService: MatchDataSource {
                     existingMatch.name = user.name
                     existingMatch.age = Int16(user.age)
                     existingMatch.location = user.location
-                    existingMatch.decision = decision ?? false // Keep the decision
+                    existingMatch.decision = existingMatch.decision // Keep the decision
                 } else {
                     // Create a new match if it doesn't exist
                     let match = UserDecision(context: context)
@@ -73,7 +77,7 @@ class CoreDataService: MatchDataSource {
                     match.name = user.name
                     match.age = Int16(user.age)
                     match.location = user.location
-                    match.decision = decision ?? false
+                    match.decision = MatchStatus.pending.rawValue
                 }
 
                 // Save changes

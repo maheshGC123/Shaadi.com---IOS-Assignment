@@ -8,6 +8,6 @@ import CoreData
 
 protocol MatchDataSource {
     func fetchMatches(completion: @escaping (Result<[Match], Error>) -> Void)
-    func saveDecision(matchId: String, decision: Bool)
+    func saveDecision(matchId: String, decision: MatchStatus, completion: @escaping (Result<Void, Error>) -> Void )
     func fetchDecisions() -> [UserDecision]
 }
